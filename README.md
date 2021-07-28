@@ -109,11 +109,11 @@ User guides:
 
 1. Compile and link the source program 55574846.cpp to produce an executable file 55574846 
 
-        > g++ 55574846.cpp -lreadline -o 55574846
+        > g++ shell.cpp -lreadline -o shell
 
 2. Run the executable file.
 
-        > ./55574846
+        > ./shell
 
 Linux Shell
 The shell continuously prompts for user command inputs.
