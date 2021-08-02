@@ -170,7 +170,28 @@ void background() {
 }
 
 // Listing Processes
-void list() {}
+// Listing all the processes that are not terminated
+void list() {
+
+    PROCESS *temp = head;
+    while (temp != NULL) {
+
+        // If a process is terminated, no need to list it
+        if (strcmp(temp->status, "terminated") != 0) {
+
+            printf("%d: %s ", temp->id, temp->status);
+            int i = 0;
+            while (temp->argsOfProcess[i] != NULL) {
+                // iterate through all the processes
+                printf("%s ", temp->argsOfProcess[i]); 
+                i++;
+            }
+            printf("\n");
+        }
+        temp = temp->next;
+    }
+
+}
 
 // Exit Shell
 void exit() {}
@@ -226,7 +247,9 @@ int main(int argc, char **argv) {
 
         // List Function
         // Listing all the processes that are not terminated
-        else if (strcmp(cmd, "list") == 0) {}
+        else if (strcmp(cmd, "list") == 0) {
+            list();
+        }
 
         // Exit the Shell
         else if (strcmp(cmd, "exit") == 0) {}
