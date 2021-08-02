@@ -46,6 +46,93 @@ int status;
 
 
 // 
+// Signal Handler
+// 
+
+void signalHandler(int signal) {
+
+    // Placeholder for text message
+    char text[50] = "";
+
+    // Placeholder for process id
+    char id_str[10];
+
+    // waitpid tracks status changes and also reapes zombie processes
+    int waitId = waitpid(0, &status, WUNTRACED);
+
+    // if waitId > 0
+    // Caught change of status
+    if (waitId > 0) {
+
+        if (WIFEXITED(status)) {
+            
+            PROCESS *temp = head;
+            while (temp != NULL && temp->id != waitId) {
+                temp = temp->next;
+            }
+
+            if (strcmp(temp->status, "terminated") != 0) {
+                strcpy(temp->status, "terminated");
+                sprintf(id_str, "%d", waitId); // put waitId into id_str
+                strcat(text, "Process ");
+                strcat(text, id_str);
+                strcat(text, " completed\n");
+                write(STDOUT_FILENO, text, sizeof(text));
+            }
+
+        }
+
+        else if (WIFSIGNALED(status)) {
+
+            PROCESS *temp = head;
+            while (temp != NULL && temp->id != waitId) {
+                temp = temp->next;
+            }
+
+            if (strcmp(temp->status, "terminated") != 0) {
+                strcpy(temp->status, "terminated");
+            }
+            sprintf(id_str, "%d", waitId);
+            strcat(text, "Process ");
+            strcat(text, id_str);
+            strcat(text, " terminated\n");
+            write(STDOUT_FILENO, text, sizeof(text));
+
+        }
+
+        else if (WIFSTOPPED(status)) {
+            
+            PROCESS *temp = head;
+            while (temp != NULL && temp->id != waitId) {
+                temp = temp->next;
+            }
+
+            if (strcmp(temp->status, "stopped") != 0) {
+                strcpy(temp->status, "stopped");
+            }
+            sprintf(id_str, "%d", waitId);
+            strcat(text, "Process ");
+            strcat(text, id_str);
+            strcat(text, " stopped\n");
+            write(STDOUT_FILENO, text, sizeof(text));
+
+        }
+
+    }
+
+    else if (waitId == -1) {
+        printf("error: waiting for child");
+        exit(EXIT_FAILURE);
+    }
+
+    // Foreground process finish
+    runningForeground = 0;
+
+}
+
+
+
+// 
 // Scenario Functions
 // 
 
@@ -57,6 +144,18 @@ void foreground() {
 
     // Child Process
     if (pid == 0) {
+
+        //Enabling Ctrl+C and Ctrl+Z commands
+        if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
+            printf("%d can't be enabled\n", SIGINT);
+            exit(1);
+        }
+        if (signal(SIGTSTP, SIG_DFL) == SIG_ERR) {
+            printf("%d can't be enabled\n", SIGTSTP);
+            exit(1);
+        }
+        
+
 
         //  Executing path program
         if (execvp(args[0], args) < 0) {
@@ -215,6 +314,28 @@ void exit() {
 // Start of the main Function
 // 
 int main(int argc, char **argv) {
+
+    // Disabling Ctrl+C and Ctrl+Z Commands
+    // for both background and foreground (for now)
+
+    // CTRL+C
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR) 
+    {
+        printf("%d can't be disabled\n", SIGINT);
+        exit(1);
+    }
+
+     // CTRL+Z 
+    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
+        printf("%d can't be disabled\n", SIGTSTP);
+        exit(1);
+    }
+
+    //  Initializing handle function for SIGCHLD
+    if (signal(SIGCHLD, signalHandler) == SIG_ERR) {
+        printf("Can't handle SIGCHLD\n");
+        exit(EXIT_FAILURE);
+    }
 
 
     //  Start of the Busy Loop
