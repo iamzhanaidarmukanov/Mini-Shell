@@ -48,7 +48,72 @@ int status;
 // 
 // Scenario Functions
 // 
-void foreground() {}
+
+// Foreground Process
+void foreground() {
+
+    //  Create a child process
+    pid = fork();
+
+    // Child Process
+    if (pid == 0) {
+
+        //  Executing path program
+        if (execvp(args[0], args) < 0) {
+            printf("execvp is failed for process. \n");
+            exit(EXIT_FAILURE);
+        }
+
+    }
+
+    // Parent Process
+    else if (pid > 0) {
+
+        //  Creating new Process
+        PROCESS *newProcess = (PROCESS *)malloc(sizeof(PROCESS));
+
+        //  Filling its attributes
+        newProcess -> id = pid;
+        strcpy(newProcess->status, "running");
+        int i = 0;
+        while (args[i] != NULL) {
+            newProcess -> argsOfProcess[i] = (char *)malloc(strlen(args[i]) + 1);
+            if (newProcess->argsOfProcess[i] != NULL) {
+                strcpy(newProcess->argsOfProcess[i], args[i]);
+            }
+            i++;
+        }
+        newProcess->argsOfProcess[i] = NULL; // Last index of the array should be terminating NULL
+        newProcess->next = NULL;
+
+        //  Including this process in the processes list
+        //  Simple algorithm to put it last in the list
+        if (head == NULL) {
+            head = newProcess;
+        } else {
+            PROCESS *temp = head;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = newProcess;
+        }
+
+    }
+
+    // Fork Failed
+    else {
+        printf("Fork Failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //  Since we run foreground process, runningForeground should become 1
+    runningForeground = 1;
+}
+
+
+
+
+
 void background() {}
 void list() {}
 void exit() {}
@@ -93,7 +158,9 @@ int main(int argc, char **argv) {
         }
 
         // Foreground Process
-        else if (strcmp(cmd, "fg") == 0) {}
+        else if (strcmp(cmd, "fg") == 0) {
+            foreground();
+        }
 
         // Background Process
         else if (strcmp(cmd, "bg") == 0) {}
