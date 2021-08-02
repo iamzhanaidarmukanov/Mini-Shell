@@ -19,6 +19,45 @@ char *cmd = NULL;
 // Array for arguments
 char *args[20];
 
+// Flag of Foreground process
+// if it is 0, then foreground process is not running
+// if it is 1, then foreground process is running
+int runningForeground = 0;
+
+
+//
+// Structure of the process
+// 
+struct PROCESS
+{
+    int id;
+    char status[20];
+    char *argsOfProcess[20];
+    PROCESS *next = NULL;
+};
+
+PROCESS *head = NULL; // Head is NULL for now
+
+// Creating pid
+pid_t pid = getpid();
+
+// Create status of the process
+int status;
+
+
+// 
+// Scenario Functions
+// 
+void foreground() {}
+void background() {}
+void list() {}
+void exit() {}
+
+
+
+// 
+// Start of the main Function
+// 
 int main(int argc, char **argv) {
 
 
@@ -48,7 +87,6 @@ int main(int argc, char **argv) {
         //  Start of the scenarios
         // 
 
-
         // Empty Command
         if (cmd == NULL) {
             continue; // If empty command, do nothing
@@ -71,8 +109,6 @@ int main(int argc, char **argv) {
         else {
             printf("Unrecognized command.\n");
         }
-
     }
-
     return 0;
 }
