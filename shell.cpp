@@ -194,7 +194,20 @@ void list() {
 }
 
 // Exit Shell
-void exit() {}
+void exit() {
+
+    // Terminate all children processes
+    while (head != NULL) {
+        if (strcmp(head->status, "terminated") != 0) {
+            strcpy(head->status, "terminated");
+            kill(head->id, SIGKILL);
+            sleep(1);
+        }
+        head = head->next;
+    }
+    exit(EXIT_SUCCESS);
+
+}
 
 
 
@@ -252,7 +265,9 @@ int main(int argc, char **argv) {
         }
 
         // Exit the Shell
-        else if (strcmp(cmd, "exit") == 0) {}
+        else if (strcmp(cmd, "exit") == 0) {
+            exit();
+        }
         
         // Invalid Command
         else {
