@@ -110,12 +110,69 @@ void foreground() {
     runningForeground = 1;
 }
 
+// Background Process
+void background() {
 
+    //  Creating child Process
+    pid_t newPid = fork();
 
+    // Child Process
+    if (newPid == 0) {
 
+        if (execvp(args[0], args) < 0) {
+            printf("execvp is failed for process. \n");
+            exit(EXIT_FAILURE);
+        }
 
-void background() {}
+    }
+
+    // Parent Process
+    else if (newPid > 0) {
+
+       //  Creating new Process
+        PROCESS *newProcess = (PROCESS *)malloc(sizeof(PROCESS));
+
+        //  Filling its attributes
+        newProcess->id = newPid;
+        strcpy(newProcess->status, "running");
+        int i = 0;
+        while (args[i] != NULL) {
+            newProcess->argsOfProcess[i] = (char *)malloc(strlen(args[i]) + 1);
+            if (newProcess->argsOfProcess[i] != NULL) {
+                strcpy(newProcess->argsOfProcess[i], args[i]);
+            }
+            i++;
+        }
+
+        newProcess->argsOfProcess[i] = NULL; // Last index of the array should be terminating NULL
+        newProcess->next = NULL;
+
+        //  Including this process in the processes list
+        //  Simple algorithm to put it last in the list
+        if (head == NULL) {
+            head = newProcess;
+        } else {
+            PROCESS *temp = head;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = newProcess;
+        }
+
+    }
+
+    // Fork Failed
+    else {
+        printf("fork is failed!\n");
+        exit(EXIT_FAILURE);
+    }
+
+}
+
+// Listing Processes
 void list() {}
+
+// Exit Shell
 void exit() {}
 
 
@@ -163,7 +220,9 @@ int main(int argc, char **argv) {
         }
 
         // Background Process
-        else if (strcmp(cmd, "bg") == 0) {}
+        else if (strcmp(cmd, "bg") == 0) {
+            background();
+        }
 
         // List Function
         // Listing all the processes that are not terminated
